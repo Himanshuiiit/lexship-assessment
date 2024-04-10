@@ -19,6 +19,9 @@ const BarcodeScanner = ({ onSubmit }) => {
       console.log(error);
       setError("Camera Not Found");
     },
+    onDecodeError(error) {
+      console.log(error);
+    },
   });
 
   const handleClick = async () => {

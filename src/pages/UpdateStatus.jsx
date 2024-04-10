@@ -36,7 +36,7 @@ const UpdateStatus = () => {
     try {
       setLoading(true);
       const res = await instance.post(
-        `https://live2.lexship.biz/api/awb/status/update?statusCode=${
+        `https://lexlive2.lexship.biz/api/awb/status/update?statusCode=${
           selected.code
         }&CreatedDate=${getCurrentDate()}&CreatedTime=${getCurrentTime()}`,
         {
