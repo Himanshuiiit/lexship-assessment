@@ -11,10 +11,12 @@ const UpdateStatus = () => {
   const [formData, setFormData] = useState({
     awbCode: "",
     convertedCode: "",
+    date: "",
+    time: "",
   });
 
   const getCurrentDate = () => {
-    const currentDate = new Date();
+    const currentDate = new Date(formData.date);
     const year = currentDate.getFullYear();
     const month = String(currentDate.getMonth() + 1).padStart(2, "0"); // Adding 1 because January is 0
     const day = String(currentDate.getDate()).padStart(2, "0");
@@ -23,7 +25,7 @@ const UpdateStatus = () => {
   };
 
   const getCurrentTime = () => {
-    const currentTime = new Date();
+    const currentTime = new Date(formData.time);
     const hours = String(currentTime.getHours()).padStart(2, "0");
     const minutes = String(currentTime.getMinutes()).padStart(2, "0");
     const seconds = String(currentTime.getSeconds()).padStart(2, "0");
@@ -32,8 +34,9 @@ const UpdateStatus = () => {
 
   const onSubmit = async (e) => {
     e.preventDefault();
-    if (!formData.awbCode) return;
+    if (!formData.awbCode || !formData.time || !formData.date) return;
     try {
+      console.log(formData);
       setLoading(true);
       const res = await instance.post(
         `https://lexlive2.lexship.biz/api/awb/status/update?statusCode=${
@@ -44,7 +47,7 @@ const UpdateStatus = () => {
         }
       );
       if (res.status === 200) {
-        setFormData({ awbCode: "", convertedCode: "" });
+        setFormData({ awbCode: "", convertedCode: "", date: "", time: "" });
         setSelected(statusData[0]);
         toast.success("Status Updated");
       }
@@ -56,11 +59,13 @@ const UpdateStatus = () => {
   };
   return (
     <form className="w-full max-w-[90rem] m-auto" onSubmit={onSubmit}>
+      {/* barcode */}
       <div className="w-[90%] flex justify-between gap-4 items-center my-4">
         <label className="text-gray-500 whitespace-nowrap">AWB Code: </label>
         <input
           type="text"
           placeholder="AWB code"
+          value={formData.awbCode}
           onChange={(e) =>
             setFormData({ ...formData, awbCode: e.target.value })
           }
@@ -72,6 +77,7 @@ const UpdateStatus = () => {
         <input
           type="text"
           placeholder="Convered code"
+          value={formData.convertedCode}
           onChange={(e) =>
             setFormData({ ...formData, convertedCode: e.target.value })
           }
@@ -79,6 +85,7 @@ const UpdateStatus = () => {
         />
       </div>
 
+      {/* status */}
       <div className="w-fit flex gap-10 items-center my-4">
         <label className="text-gray-500 whitespace-nowrap">Status: </label>
         <Listbox value={selected} onChange={setSelected} className="w-[30%]">
@@ -98,7 +105,7 @@ const UpdateStatus = () => {
               leaveFrom="opacity-100"
               leaveTo="opacity-0"
             >
-              <Listbox.Options className="absolute mt-1 max-h-60 w-96 overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black/5 focus:outline-none sm:text-sm">
+              <Listbox.Options className="absolute mt-1 z-20 max-h-60 w-96 overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black/5 focus:outline-none sm:text-sm">
                 {statusData.map((data) => (
                   <Listbox.Option
                     key={data.code}
@@ -129,6 +136,27 @@ const UpdateStatus = () => {
           </div>
         </Listbox>
       </div>
+      {/* Date picker and time picker */}
+      <div>
+        <div className="w-fit flex gap-10 items-center my-8">
+          <label className="text-gray-500 whitespace-nowrap">Date: </label>
+          <input
+            type="date"
+            value={formData.date}
+            className="relative cursor-default rounded-lg my-4 bg-white py-2 px-3 text-left shadow-md focus:outline-none focus-visible:border-indigo-500 focus-visible:ring-2 focus-visible:ring-white/75 focus-visible:ring-offset-2 focus-visible:ring-offset-blue-300 sm:text-sm"
+            onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+          />
+          <label className="text-gray-500 whitespace-nowrap">Time: </label>
+          <input
+            type="time"
+            value={formData.time}
+            className="relative cursor-default rounded-lg my-4 bg-white py-2 px-3  text-left shadow-md focus:outline-none focus-visible:border-indigo-500 focus-visible:ring-2 focus-visible:ring-white/75 focus-visible:ring-offset-2 focus-visible:ring-offset-blue-300 sm:text-sm"
+            onChange={(e) => setFormData({ ...formData, time: e.target.value })}
+          />
+        </div>
+      </div>
+
+      {/* submit button */}
       <div className="w-full h-16 flex gap-10 items-center my-4 relative">
         <button
           type="submit"
