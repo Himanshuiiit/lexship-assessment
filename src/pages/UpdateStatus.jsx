@@ -4,13 +4,14 @@ import { RiExpandUpDownLine } from "react-icons/ri";
 import { AiOutlineLoading3Quarters } from "react-icons/ai";
 import { instance, statusData } from "../utils";
 import toast, { Toaster } from "react-hot-toast";
+import { FiMinus, FiPlus } from "react-icons/fi";
 
 const UpdateStatus = () => {
   const [selected, setSelected] = useState(statusData[0]);
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
-    awbCode: "",
-    convertedCode: "",
+    awbCode: [""],
+    convertedCode: [""],
     date: "",
     time: "",
   });
@@ -18,18 +19,33 @@ const UpdateStatus = () => {
   const getCurrentDate = () => {
     const currentDate = new Date(formData.date);
     const year = currentDate.getFullYear();
-    const month = String(currentDate.getMonth() + 1).padStart(2, "0"); // Adding 1 because January is 0
+    const month = String(currentDate.getMonth() + 1).padStart(2, "0");
     const day = String(currentDate.getDate()).padStart(2, "0");
-
     return `${year}-${month}-${day}`;
   };
 
   const getCurrentTime = () => {
-    const currentTime = new Date(formData.time);
-    const hours = String(currentTime.getHours()).padStart(2, "0");
-    const minutes = String(currentTime.getMinutes()).padStart(2, "0");
-    const seconds = String(currentTime.getSeconds()).padStart(2, "0");
+    const currentTime = formData.time;
+    const hours = currentTime.split(":")[0];
+    const minutes = currentTime.split(":")[1];
+    const seconds = currentTime.split(":")[2] || "00";
     return `${hours}:${minutes}:${seconds}`;
+  };
+
+  const handleCount = (index) => {
+    if (index === formData.awbCode.length - 1) {
+      setFormData({
+        ...formData,
+        awbCode: [...formData.awbCode, ""],
+        convertedCode: [...formData.convertedCode, ""],
+      });
+    } else {
+      setFormData({
+        ...formData,
+        awbCode: formData.awbCode.filter((_, i) => i !== index),
+        convertedCode: formData.convertedCode.filter((_, i) => i !== index),
+      });
+    }
   };
 
   const onSubmit = async (e) => {
@@ -43,11 +59,11 @@ const UpdateStatus = () => {
           selected.code
         }&CreatedDate=${getCurrentDate()}&CreatedTime=${getCurrentTime()}`,
         {
-          AWBs: [formData.awbCode],
+          AWBs: formData.awbCode,
         }
       );
       if (res.status === 200) {
-        setFormData({ awbCode: "", convertedCode: "", date: "", time: "" });
+        setFormData({ awbCode: [''], convertedCode: [''], date: "", time: "" });
         setSelected(statusData[0]);
         toast.success("Status Updated");
       }
@@ -60,30 +76,55 @@ const UpdateStatus = () => {
   return (
     <form className="w-full max-w-[90rem] m-auto" onSubmit={onSubmit}>
       {/* barcode */}
-      <div className="w-[90%] flex justify-between gap-4 items-center my-4">
-        <label className="text-gray-500 whitespace-nowrap">AWB Code: </label>
-        <input
-          type="text"
-          placeholder="AWB code"
-          value={formData.awbCode}
-          onChange={(e) =>
-            setFormData({ ...formData, awbCode: e.target.value })
-          }
-          className="w-[45%] relative cursor-default rounded-lg my-4 bg-white py-2 pl-3 pr-10 text-left shadow-md focus:outline-none focus-visible:border-indigo-500 focus-visible:ring-2 focus-visible:ring-white/75 focus-visible:ring-offset-2 focus-visible:ring-offset-blue-300 sm:text-sm"
-        />
-        <label className="text-gray-500 whitespace-nowrap">
-          Converted Code:{" "}
-        </label>
-        <input
-          type="text"
-          placeholder="Convered code"
-          value={formData.convertedCode}
-          onChange={(e) =>
-            setFormData({ ...formData, convertedCode: e.target.value })
-          }
-          className="w-[45%] relative cursor-default rounded-lg my-4 bg-white py-2 pl-3 pr-10 text-left shadow-md focus:outline-none focus-visible:border-indigo-500 focus-visible:ring-2 focus-visible:ring-white/75 focus-visible:ring-offset-2 focus-visible:ring-offset-blue-300 sm:text-sm"
-        />
-      </div>
+      {formData.awbCode.map((awb, index) => {
+        return (
+          <div
+            className="w-[90%] flex justify-between gap-4 items-center mt-2"
+            key={index}
+          >
+            <label className="text-gray-500 whitespace-nowrap">
+              AWB Code:{" "}
+            </label>
+            <input
+              type="text"
+              placeholder="AWB code"
+              value={awb}
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  awbCode: formData.awbCode.map((_, i) =>
+                    i === index ? e.target.value : _
+                  ),
+                })
+              }
+              className="w-[45%] relative cursor-default rounded-lg my-4 bg-white py-2 pl-3 pr-10 text-left shadow-md focus:outline-none focus-visible:border-indigo-500 focus-visible:ring-2 focus-visible:ring-white/75 focus-visible:ring-offset-2 focus-visible:ring-offset-blue-300 sm:text-sm"
+            />
+            <label className="text-gray-500 whitespace-nowrap">
+              Converted Code:{" "}
+            </label>
+            <input
+              type="text"
+              placeholder="Convered code"
+              value={formData.convertedCode[index]}
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  convertedCode: formData.convertedCode.map((_, i) =>
+                    i === index ? e.target.value : _
+                  ),
+                })
+              }
+              className="w-[45%] relative cursor-default rounded-lg my-4 bg-white py-2 pl-3 pr-10 text-left shadow-md focus:outline-none focus-visible:border-indigo-500 focus-visible:ring-2 focus-visible:ring-white/75 focus-visible:ring-offset-2 focus-visible:ring-offset-blue-300 sm:text-sm"
+            />
+            <span
+              className="relative cursor-pointer rounded-lg my-4 p-2 text-left shadow-lg bg-gray-100 hover:bg-gray-200"
+              onClick={() => handleCount(index)}
+            >
+              {index === formData.awbCode.length - 1 ? <FiPlus /> : <FiMinus />}
+            </span>
+          </div>
+        );
+      })}
 
       {/* status */}
       <div className="w-fit flex gap-10 items-center my-4">

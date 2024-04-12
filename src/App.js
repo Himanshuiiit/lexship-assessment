@@ -10,6 +10,7 @@ function App() {
         <Routes>
           <Route path="/" element={<Dashboard />}>
             <Route index element={<ReadBardcode />} />
+            <Route path="*" element={<ReadBardcode />} />
             <Route path="/update-status" element={<UpdateStatus />} />
           </Route>
         </Routes>
